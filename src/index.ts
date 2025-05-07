@@ -1,3 +1,4 @@
+
 import './scss/styles.scss';
 import { AppState } from './components/AppState';
 import { EventEmitter } from './components/base/events';
@@ -122,16 +123,20 @@ events.on('basket:delete', ({ id }: { id: string }) => {
 
 // Открытие формы заказа
 events.on('order:open', () => {
-    orderForm.clearPayment(); // Очищаем способ оплаты
+    orderForm.clearPayment(); // Очищаем выбор
+    if (appState.order.payment) {
+        orderForm.payment = appState.order.payment; // Восстанавливаем сохраненный способ оплаты
+    }
     modal.render({
         content: orderForm.render({
-            payment: appState.order.payment, // Способ оплаты
-            address: appState.order.address, // Адрес доставки
-            valid: appState.validateOrder(), // Валидация формы
-            errors: [], // Ошибки валидации
+            payment: appState.order.payment,
+            address: appState.order.address,
+            valid: appState.validateOrder(),
+            errors: [],
         }),
     });
 });
+
 
 // Изменение полей формы заказа
 events.on(
@@ -147,9 +152,9 @@ events.on(
 // Изменение способа оплаты
 events.on(
     'payment:change',
-    (data: { payment: keyof Pick<IOrder, 'payment'>; button: HTMLElement }) => {
-        orderForm.togglePayment(data.button); // Переключаем способ оплаты
-        appState.setOrderPayment(data.payment); // Устанавливаем способ оплаты
+    (data: { payment: keyof Pick<IOrder, 'payment'> }) => {
+        orderForm.payment = data.payment; // Устанавливаем способ оплаты
+        appState.setOrderPayment(data.payment); // Обновляем состояние
         appState.validateOrder(); // Проводим валидацию
     }
 );
